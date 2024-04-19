@@ -4,8 +4,8 @@ import torch
 import matplotlib.pyplot as plt
 
 DATASET_PATH = './datasets/names.txt'
-START_SYMBOL = '<S>'
-END_SYMBOL = '<E>'
+START_SYMBOL = '.'
+END_SYMBOL = '.' # The same as START_SYMBOL
 
 def main():
   print(dedent(
@@ -63,9 +63,8 @@ def e4_understanding_bigram_using_2d_array():
   plt.show()
 
 def encode_characters(characters: List[str]) -> Dict[str, int]:
-  stoi = {character: index for index, character in enumerate(characters)}
-  stoi[START_SYMBOL] = len(characters)
-  stoi[END_SYMBOL] = len(characters) + 1
+  stoi = {character: index + 1 for index, character in enumerate(characters)}
+  stoi[START_SYMBOL] = 0
 
   return stoi
 
