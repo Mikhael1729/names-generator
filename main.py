@@ -28,6 +28,7 @@ def e4_understanding_bigram_using_2d_array():
   names = read_names(DATASET_PATH)
   letters = get_unique_letters_list(names)
   stoi = encode_characters(letters)
+  itos = decode_characters(stoi)
   N = len(stoi) # Number of unique characters
 
   # Initialize bigram count matrix
@@ -35,17 +36,31 @@ def e4_understanding_bigram_using_2d_array():
 
   # Count bigrams using the matrix
   for name in names:
-    chars = [START_SYMBOL] + list(name) + [END_SYMBOL]
+    name_letters = [START_SYMBOL] + list(name) + [END_SYMBOL]
 
-    for char1, char2 in zip(chars, chars[1:]):
-      index_char1 = stoi[char1]
-      index_char2 = stoi[char2]
+    for letter1, letter2 in zip(name_letters, name_letters[1:]):
+      index_letter1 = stoi[letter1]
+      index_letter2 = stoi[letter2]
 
-      bigram_count[index_char1, index_char2] += 1
+      bigram_count[index_letter1, index_letter2] += 1
 
-  # Visualize the results
+  # Visualize the results using a heatmap
   plt.imshow(bigram_count)
-  plt.show() # Keep the window open
+
+  # Visualize heatmap with data
+  S = 16
+  plt.figure(figsize=(S, S))
+  plt.imshow(bigram_count, cmap='Blues')
+  plt.axis('off')
+  font_size = S / 2
+
+  for i in range(N):
+    for j in range(N):
+      bigram = itos[i] + itos[j]
+      plt.text(j, i, bigram, ha='center', va='bottom', color='gray', fontsize=font_size)
+      plt.text(j, i, bigram_count[i, j].item(), ha='center', va='top', color='gray', fontsize=font_size)
+
+  plt.show()
 
 def encode_characters(characters: List[str]) -> Dict[str, int]:
   stoi = {character: index for index, character in enumerate(characters)}
@@ -53,6 +68,9 @@ def encode_characters(characters: List[str]) -> Dict[str, int]:
   stoi[END_SYMBOL] = len(characters) + 1
 
   return stoi
+
+def decode_characters(encoded_characters: Dict[str, int]):
+  return {index: character for character, index in encoded_characters.items()}
 
 def e3_playing_with_tensors():
   A = torch.zeros((5, 5), dtype=torch.int32)
