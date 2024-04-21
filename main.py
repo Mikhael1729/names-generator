@@ -19,7 +19,64 @@ def main():
   # e1_exploring_dataset()
   # e2_understanding_bigram()
   # e3_playing_with_tensors()
-  e4_understanding_bigram_using_2d_array()
+  # e4_understanding_bigram_using_2d_array()
+  e5_create_bigram_model()
+
+def e5_create_bigram_model():
+  """
+  Convert the dictionary representation of the bigram into a 2D array
+  """
+  names = read_names(DATASET_PATH)
+  letters = get_unique_letters_list(names)
+  stoi = encode_characters(letters)
+  itos = decode_characters(stoi)
+  N = len(stoi) # Number of unique characters
+
+  # Initialize bigram count matrix
+  bigram_count = torch.zeros((N, N), dtype=torch.int32)
+
+  # Count bigrams using the matrix
+  for name in names:
+    name_letters = [START_SYMBOL] + list(name) + [END_SYMBOL]
+
+    for letter1, letter2 in zip(name_letters, name_letters[1:]):
+      index_letter1 = stoi[letter1]
+      index_letter2 = stoi[letter2]
+
+      bigram_count[index_letter1, index_letter2] += 1
+
+  # Visualize the results using a heatmap
+  plt.imshow(bigram_count)
+
+  # Visualize heatmap with data
+  S = 16
+  plt.figure(figsize=(S, S))
+  plt.imshow(bigram_count, cmap='Blues')
+  plt.axis('off')
+  font_size = S / 2
+
+  for i in range(N):
+    for j in range(N):
+      bigram = itos[i] + itos[j]
+      plt.text(j, i, bigram, ha='center', va='bottom', color='gray', fontsize=font_size)
+      plt.text(j, i, bigram_count[i, j].item(), ha='center', va='top', color='gray', fontsize=font_size)
+
+  plt.show()
+
+  # Create probability distribution
+  start_letters_count = bigram_count[0].float() # Contains the count of times each letter starts a name
+  start_letters_distribution =  start_letters_count / start_letters_count.sum()
+
+  # Get one letter proabilistically
+  random_index = torch.multinomial(
+    start_letters_distribution,
+    num_samples=1, # We want only one letter
+    replacement=True, # Sample index can be drawn again
+    generator=torch.Generator().manual_seed(2147483647) # To replicate the results
+  )
+
+  print(random_index)
+
 
 def e4_understanding_bigram_using_2d_array():
   """
