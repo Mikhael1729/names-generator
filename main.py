@@ -2,6 +2,7 @@ from textwrap import dedent
 from typing import List, Dict, Tuple
 import torch
 import matplotlib.pyplot as plt
+from bigram_model import BigramNameGenerator
 
 DATASET_PATH = './datasets/names.txt'
 START_SYMBOL = '.'
@@ -20,7 +21,19 @@ def main():
   # e2_understanding_bigram()
   # e3_playing_with_tensors()
   # e4_understanding_bigram_using_2d_array()
-  e5_create_bigram_model()
+  # e5_create_bigram_model()
+  e6_use_bigram_model()
+
+def e6_use_bigram_model():
+  # Extract the features of the names
+  generator = BigramNameGenerator(DATASET_PATH)
+
+  # Generate a list containing 10 names
+  names = generator.generate(10)
+  print(names)
+
+  # Visualize the features of the model
+  generator.visualize()
 
 def e5_create_bigram_model():
   """
