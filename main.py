@@ -63,19 +63,31 @@ def e5_create_bigram_model():
 
   plt.show()
 
-  # Create probability distribution
-  start_letters_count = bigram_count[0].float() # Contains the count of times each letter starts a name
-  start_letters_distribution =  start_letters_count / start_letters_count.sum()
+  print("10 generated words: \n")
 
-  # Get one letter proabilistically
-  random_index = torch.multinomial(
-    start_letters_distribution,
-    num_samples=1, # We want only one letter
-    replacement=True, # Sample index can be drawn again
-    generator=torch.Generator().manual_seed(2147483647) # To replicate the results
-  )
+  # Model in action
+  random_index = 0
+  randomness_generator = torch.Generator().manual_seed(2147483647)
 
-  print(random_index)
+  for i in range(10):
+    generated_letters = []
+
+    while True:
+      start_letters_count = bigram_count[random_index].float() # Contains the count of times each letter starts a name
+      start_letters_distribution =  start_letters_count / start_letters_count.sum()
+      random_index = torch.multinomial(
+        start_letters_distribution,
+        num_samples=1, # We want only one letter
+        replacement=True, # Sample index can be drawn again
+        generator= randomness_generator # To replicate the results
+      ).item()
+
+      generated_letters.append(itos[random_index])
+
+      if random_index == 0:
+        break
+
+    print('-', ''.join(generated_letters[0:len(generated_letters) - 1]))
 
 
 def e4_understanding_bigram_using_2d_array():
