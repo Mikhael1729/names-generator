@@ -35,17 +35,22 @@ class BigramNameGenerator:
     random_index = 0
     randomness_generator = torch.Generator().manual_seed(2147483647)
 
+    all_letters_distribution = self.bigram_count / self.bigram_count.sum(1, keepdim=True)
+    # Division is applied to a (27,27) / (27, 1)
+    # 1            : indicates the sum applies only to dimension 1 (the rows)
+    # keepdim=True : It tells the function to avoid squeezing dimensions if they become of size 1, in this case the rows
+
+
     for _ in range(10):
       generated_letters = []
 
       while True:
-        start_letters_count = self.bigram_count[random_index].float() # Contains the count of times each letter starts a name
-        start_letters_distribution =  start_letters_count / start_letters_count.sum() # This is the core of the model
+        letters_distribution = all_letters_distribution[random_index]
         random_index = torch.multinomial(
-          start_letters_distribution,
+          letters_distribution,
           num_samples=1, # We want only one letter
           replacement=True, # Sample index can be drawn again
-          generator= randomness_generator # To replicate the results
+          generator=randomness_generator # To replicate the results
         ).item()
 
         generated_letters.append(self.itos[random_index])
