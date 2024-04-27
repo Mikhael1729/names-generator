@@ -47,7 +47,7 @@ class BigramNameGenerator:
     #    keepdim=True : It tells the function to avoid squeezing dimensions if they become of size 1, in this case the rows
 
 
-    for _ in range(10):
+    for _ in range(quantity):
       generated_letters = []
 
       while True:
