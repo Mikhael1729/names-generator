@@ -35,10 +35,16 @@ class BigramNameGenerator:
     random_index = 0
     randomness_generator = torch.Generator().manual_seed(2147483647)
 
-    all_letters_distribution = self.bigram_count / self.bigram_count.sum(1, keepdim=True)
-    # Division is applied to a (27,27) / (27, 1)
-    # 1            : indicates the sum applies only to dimension 1 (the rows)
-    # keepdim=True : It tells the function to avoid squeezing dimensions if they become of size 1, in this case the rows
+    all_letters_distribution = self.bigram_count.float()
+    all_letters_distribution /= self.bigram_count.sum(1, keepdim=True)
+
+    # Two thing about the last expression:
+    # 1. The reason I used an inplace operation instead of doing p = p / p.sum(...) is for eficiency,
+    #    this way it avoids creating a new complete tensor an just updates the existing one
+    # 2. The broadcasting: Division is applied to a (27,27) / (27, 1)
+    # 3. About the parameters: 
+    #    1            : indicates the sum applies only to dimension 1 (the rows)
+    #    keepdim=True : It tells the function to avoid squeezing dimensions if they become of size 1, in this case the rows
 
 
     for _ in range(10):
