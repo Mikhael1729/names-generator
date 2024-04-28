@@ -29,6 +29,9 @@ class BigramNameGenerator:
     self.bigram_count = bigram_count
     self.N = N
     self.itos = itos
+    self.stoi = stoi
+    self.names = names
+    self.bigrams_probability_distribution = None
 
   def generate(self, quantity: int) -> List[str]:
     generated_names = []
@@ -37,7 +40,6 @@ class BigramNameGenerator:
 
     all_letters_distribution = self.bigram_count.float()
     all_letters_distribution /= self.bigram_count.sum(1, keepdim=True)
-
     # Two thing about the last expression:
     # 1. The reason I used an inplace operation instead of doing p = p / p.sum(...) is for eficiency,
     #    this way it avoids creating a new complete tensor an just updates the existing one
@@ -46,6 +48,7 @@ class BigramNameGenerator:
     #    1            : indicates the sum applies only to dimension 1 (the rows)
     #    keepdim=True : It tells the function to avoid squeezing dimensions if they become of size 1, in this case the rows
 
+    self.bigrams_probability_distribution = all_letters_distribution
 
     for _ in range(quantity):
       generated_letters = []
@@ -67,6 +70,30 @@ class BigramNameGenerator:
       generated_names.append(''.join(generated_letters[0:len(generated_letters) - 1]))
 
     return generated_names
+
+  def get_negative_log_likelihood(self, normalized=True):
+    return -1 * self.get_log_likelihood(normalized)
+
+  def get_log_likelihood(self, normalized) -> float:
+    log_likelihood = 0.0
+    n = 0
+
+    for name in self.names:
+      name_letters = [START_SYMBOL] + list(name) + [END_SYMBOL]
+
+      for letter1, letter2 in zip(name_letters, name_letters[1:]):
+        index_letter1 = self.stoi[letter1]
+        index_letter2 = self.stoi[letter2]
+
+        # The probability of occuring any two secuence of words
+        probability = self.bigrams_probability_distribution[index_letter1, index_letter2]
+
+        log_probability = torch.log(probability)
+        log_likelihood += log_probability
+
+        n += 1
+
+    return log_likelihood if not normalized else normalized / n
 
   def visualize(self):
     # Visualize the results using a heatmap

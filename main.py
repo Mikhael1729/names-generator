@@ -32,6 +32,13 @@ def e6_use_bigram_model():
   names = generator.generate(10)
   print(names)
 
+  print("\n---\n")
+  print(f'{generator.get_log_likelihood(False)=}')
+  print(f'{generator.get_log_likelihood(True)=}')
+
+  print(f'{generator.get_negative_log_likelihood(False)=}')
+  print(f'{generator.get_negative_log_likelihood(True)=}')
+
   # Visualize the features of the model
   generator.visualize()
 
