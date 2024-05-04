@@ -26,20 +26,9 @@ class BigramNameGenerator:
 
         bigram_count[index_letter1, index_letter2] += 1
 
-    self.bigram_count = bigram_count
-    self.N = N
-    self.itos = itos
-    self.stoi = stoi
-    self.names = names
-    self.bigrams_probability_distribution = None
-
-  def generate(self, quantity: int) -> List[str]:
-    generated_names = []
-    random_index = 0
-    randomness_generator = torch.Generator().manual_seed(2147483647)
-
-    all_letters_distribution = self.bigram_count.float()
-    all_letters_distribution /= self.bigram_count.sum(1, keepdim=True)
+    # Compute probability distribution of all bigrms
+    bigrams_distribution = bigram_count.float()
+    bigrams_distribution /= bigram_count.sum(1, keepdim=True)
     # Two thing about the last expression:
     # 1. The reason I used an inplace operation instead of doing p = p / p.sum(...) is for eficiency,
     #    this way it avoids creating a new complete tensor an just updates the existing one
@@ -48,18 +37,30 @@ class BigramNameGenerator:
     #    1            : indicates the sum applies only to dimension 1 (the rows)
     #    keepdim=True : It tells the function to avoid squeezing dimensions if they become of size 1, in this case the rows
 
-    self.bigrams_probability_distribution = all_letters_distribution
+    randomness_generator = torch.Generator().manual_seed(2147483647)
+
+    self.bigrams_probability_distribution = bigrams_distribution
+    self.bigram_count = bigram_count
+    self.N = N
+    self.itos = itos
+    self.stoi = stoi
+    self.names = names
+    self.randomness_generator = randomness_generator
+
+  def generate(self, quantity: int) -> List[str]:
+    generated_names = []
+    random_index = 0
 
     for _ in range(quantity):
       generated_letters = []
 
       while True:
-        letters_distribution = all_letters_distribution[random_index]
+        letters_distribution = self.bigrams_probability_distribution[random_index]
         random_index = torch.multinomial(
           letters_distribution,
           num_samples=1, # We want only one letter
           replacement=True, # Sample index can be drawn again
-          generator=randomness_generator # To replicate the results
+          generator=self.randomness_generator # To replicate the results
         ).item()
 
         generated_letters.append(self.itos[random_index])
@@ -100,7 +101,7 @@ class BigramNameGenerator:
     plt.imshow(self.bigram_count)
 
     # Visualize heatmap with data
-    S = 16
+    S = 8
     plt.figure(figsize=(S, S))
     plt.imshow(self.bigram_count, cmap='Blues')
     plt.axis('off')
