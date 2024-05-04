@@ -41,6 +41,21 @@ $$
 \end{align}
 $$
 
+### The performance of the model
+
+I used the negative log likelihood to evaluate how well the model currently is perforforming.
+
+$$
+-\text{log}\left(L(\theta \mid X \right)) = - \sum_{i=1}^{n}log\left(P(x_i \mid \theta \right))
+$$
+
+|Symbol|Code|
+|--|--|
+|$\theta$|$P$|
+|$P(x_i \mid \theta)$|$P_{ij}$|
+
+The lower this value is the better the model is, because it is giving high probabilities to the actual next characters in all the bigrams in the dataset, meaning the model is suer in predicting an specific name
+
 ## Bigram model (neural network approach)
 
 ```text
