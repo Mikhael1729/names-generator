@@ -3,6 +3,7 @@ from typing import List, Dict, Tuple
 import torch
 import matplotlib.pyplot as plt
 from bigram_model import BigramNameGenerator
+from nn_model import BigramNNModel
 
 DATASET_PATH = './datasets/names.txt'
 START_SYMBOL = '.'
@@ -22,7 +23,12 @@ def main():
   # e3_playing_with_tensors()
   # e4_understanding_bigram_using_2d_array()
   # e5_create_bigram_model()
-  e6_use_bigram_model()
+  # e6_use_bigram_model()
+  e7_use_nn_bigram_model()
+
+def e7_use_nn_bigram_model():
+  model = BigramNNModel(train_path=DATASET_PATH)
+  print('hello')
 
 def e6_use_bigram_model():
   # Extract the features of the names
