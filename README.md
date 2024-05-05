@@ -49,15 +49,33 @@ $$
 -\text{log}\left(L(\theta \mid X \right)) = - \sum_{i=1}^{n}log\left(P(x_i \mid \theta \right))
 $$
 
-|Symbol|Code|
-|--|--|
-|$\theta$|$P$|
-|$P(x_i \mid \theta)$|$P_{ij}$|
+| Symbol               | Code     |
+| -------------------- | -------- |
+| $\theta$             | $P$      |
+| $P(x_i \mid \theta)$ | $P_{ij}$ |
 
 The lower this value is the better the model is, because it is giving high probabilities to the actual next characters in all the bigrams in the dataset, meaning the model is suer in predicting an specific name
 
 ## Bigram model (neural network approach)
 
+| variable | shape      | name                | definiton                                                               |
+| -------- | ---------- | ------------------- | ----------------------------------------------------------------------- |
+| `X`      | `(5, )`    | encoded letters     | Integer values representing the letters of a name                       |
+| `Y`      | `(5, )`    | encoded next letter | Integer values representing the next letters for `X`                    |
+| `O`      | `(5, 27)`  | one-hot encoding    | The encoding of each sample in `X`                                      |
+| `W`      | `(27, 27)` | weights             | Weights connecting the 27 input neurons with the 27 in the hidden layer |
+
 ```text
-TODO:
+Forward pass:
+
+logits = O * W { (5, 27) * (27, 27) -> (5, 27) } 
+
+# Apply softmax
+counts = logits.exp() // fake (counts sort of)
+probs = counts / counts.sum(1, keepdims=True)
+
+probs is a (5, 27). Which contains the probability distributions for the next letter on each of the 5 samples
+
+5 letters
+5 distribution probabilities
 ```
