@@ -28,7 +28,10 @@ def main():
 
 def e7_use_nn_bigram_model():
   model = BigramNNModel(train_path=DATASET_PATH)
+  names = model.generate(10)
   print('hello')
+  for name in names:
+    print(name)
 
 def e6_use_bigram_model():
   # Extract the features of the names

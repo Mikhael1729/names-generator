@@ -11,7 +11,7 @@ class BigramNNModel:
     """
     Obtain training data
     """
-    X_train, Y_train = generate_training_set(train_path)
+    X_train, Y_train, stoi = generate_training_set(train_path)
 
     # Create a network with two layers of 27 neurons each (input and output layers)
     generator = torch.Generator().manual_seed(2147483647)
@@ -45,6 +45,46 @@ class BigramNNModel:
       # Update
       W.data += -50 * W.grad
 
+      self.stoi = stoi
+      self.W = W
+      self.generator = generator
+      self.itos = decode_characters(stoi)
+
+  def generate(self, quantity):
+    generator = torch.Generator().manual_seed(2147483647)
+    generated_names = []
+    random_index = 0
+
+    for _ in range(quantity):
+      generated_letters = []
+
+      while True:
+        # Forward
+        x_hot = self.encode(torch.tensor([random_index]))
+        logits = (x_hot @ self.W)
+        counts = logits.exp()
+        probabilities = counts / counts.sum(1, keepdim=True) # Get the softmax result
+
+        random_index = torch.multinomial(
+          probabilities,
+          num_samples=1, # We want only one letter
+          replacement=True, # Sample index can be drawn again
+          generator=generator # To replicate the results
+        ).item()
+
+        generated_letters.append(self.itos[random_index])
+
+        if random_index == 0:
+          break
+
+      generated_names.append(''.join(generated_letters[0:len(generated_letters) - 1]))
+
+    return generated_names
+
+  def encode(self, index: torch.Tensor):
+    X_hot = F.one_hot(index, num_classes=len(self.stoi)).float()
+    return X_hot
+
 
 def generate_training_set(train_path: str) -> Tuple[torch.Tensor, torch.Tensor]:
   names = read_names(train_path)
@@ -69,7 +109,7 @@ def generate_training_set(train_path: str) -> Tuple[torch.Tensor, torch.Tensor]:
 
   X_hot = F.one_hot(X, num_classes=len(stoi)).float()
 
-  return X_hot, Y
+  return X_hot, Y, stoi
 
 def decode_characters(encoded_characters: Dict[str, int]):
   return {index: character for character, index in encoded_characters.items()}
