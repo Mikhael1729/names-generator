@@ -11,14 +11,21 @@ class BigramNNModel:
     """
     Obtain training data
     """
-    X_train, Y_train, stoi = generate_training_set(train_path)
+    names, _, stoi, itos = load_raw_training_data(train_path)
+    X_train, Y_train = generate_training_set(names, stoi)
 
+    self.itos = itos
+    self.num_classes = len(stoi)
+
+    self.train(X_train, Y_train)
+
+  def train(self, X_train: torch.Tensor, Y_train: torch.Tensor, iterations=100, step_size=50):
     # Create a network with two layers of 27 neurons each (input and output layers)
     generator = torch.Generator().manual_seed(2147483647)
-    W = torch.randn((27, 27), generator=generator, requires_grad=True) 
+    W = torch.randn((self.num_classes, self.num_classes), generator=generator, requires_grad=True) 
 
     # Gradient Descent
-    for _ in range(100):
+    for _ in range(iterations):
       """
       Forward propagation
       """
@@ -30,7 +37,7 @@ class BigramNNModel:
       probabilities = counts / counts.sum(1, keepdim=True) # Get the softmax result
 
       """
-      Optmization
+      Optimization
       """
       # Compute loss
       size = Y_train.size(0) # 228146 bigrams count
@@ -43,12 +50,9 @@ class BigramNNModel:
       loss.backward()
 
       # Update
-      W.data += -50 * W.grad
+      W.data += -step_size * W.grad
 
-      self.stoi = stoi
-      self.W = W
-      self.generator = generator
-      self.itos = decode_characters(stoi)
+    self.W = W
 
   def generate(self, quantity):
     generator = torch.Generator().manual_seed(2147483647)
@@ -82,15 +86,11 @@ class BigramNNModel:
     return generated_names
 
   def encode(self, index: torch.Tensor):
-    X_hot = F.one_hot(index, num_classes=len(self.stoi)).float()
-    return X_hot
+    X_hot = F.one_hot(index, num_classes=self.num_classes).float()
+    return X_hot 
 
 
-def generate_training_set(train_path: str) -> Tuple[torch.Tensor, torch.Tensor]:
-  names = read_names(train_path)
-  letters = get_unique_letters_list(names)
-  stoi = encode_characters(letters)
-
+def generate_training_set(names: List[str], stoi: Dict[str, int]) -> Tuple[torch.Tensor, torch.Tensor]:
   X = [] # Sample inputs
   Y = [] # Expected letters (outputs)
 
@@ -109,7 +109,17 @@ def generate_training_set(train_path: str) -> Tuple[torch.Tensor, torch.Tensor]:
 
   X_hot = F.one_hot(X, num_classes=len(stoi)).float()
 
-  return X_hot, Y, stoi
+  return X_hot, Y
+
+
+def load_raw_training_data(training_set_path: str) -> Tuple[List[str], List[str], Dict[str, int], Dict[int, str]]:
+  names = read_names(training_set_path)
+  letters = get_unique_letters_list(names)
+  stoi = encode_characters(letters)
+  itos = decode_characters(stoi)
+
+  return names, letters, stoi, itos
+
 
 def decode_characters(encoded_characters: Dict[str, int]):
   return {index: character for character, index in encoded_characters.items()}
